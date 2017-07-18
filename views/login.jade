@@ -1,0 +1,15 @@
+extends layout
+block body
+	form(action='/login', method='post')
+		fieldset
+			legend Log in
+			p
+				label Email
+				input(name='user[email]', type='text')
+			p
+				label Password
+				input(name='user[passowrd]', type='text')
+			p
+				button Submit
+			p
+				a(href='/') Go back
