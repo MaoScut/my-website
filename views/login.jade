@@ -1,11 +1,13 @@
 extends layout
 block body
+	if (signupEmail)
+		p Congratulations on signing up, Please login below.
 	form(action='/login', method='post')
 		fieldset
 			legend Log in
 			p
 				label Email
-				input(name='user[email]', type='text')
+				input(name='user[email]', type='text', value=signupEmail)
 			p
 				label Password
 				input(name='user[passowrd]', type='text')

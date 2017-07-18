@@ -38,12 +38,35 @@ app.get('/login', (req, res) => {
 app.get('/signup', (req, res) => {
 	res.render('signup');
 });
+
+/**
+ * sign up handler
+*/
+app.post('/signup', (req, res, next) => {
+  console.log(req.body.user);
+  debugger;
+  app.users.insert(req.body.user, {}, function(err, doc) {
+    if(err) {
+      console.log(err);
+      return next(err);
+    }
+    res.redirect('/login/' + doc[0].email);
+  })
+})
+
+/**
+ * log in handler
+ */
+ app.get('/login/:signupEmail', (req, res) => {
+  res.render('login', { signupEmail: req.params.signupEmail });
+ })
+
 let server = new mongodb.Server('127.0.0.1', 27017);
 new mongodb.Db('my-websit', server).open((err, client) => {
   if(err) throw err;
   console.log('\033[96m + \033[39m connected to mongodb');
   app.users = new mongodb.Collection(client, 'users');
-  // console.log(app.users);
+  console.log(app.users.insert);
   http.createServer(app).listen(3000, function() {
     console.log('\033[96m + \033[39m app is listening on * 3000');
   })
