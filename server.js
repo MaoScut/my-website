@@ -7,9 +7,12 @@
 // app.use(serve);
 // http.createServer(app).listen(3000);
 let express = require('express');
-let mongodb = require('mongodb');
+let MongoClient = require('mongodb').MongoClient;
 let http = require('http');
 let path = require('path');
+
+const uri = 'mongodb://MaoScut:1253012qwe@cluster0-shard-00-00-38shn.mongodb.net:27017,cluster0-shard-00-01-38shn.mongodb.net:27017,cluster0-shard-00-02-38shn.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin';
+let database = null;
 
 let app = express();
 app.configure(function(){
@@ -44,30 +47,62 @@ app.get('/signup', (req, res) => {
 */
 app.post('/signup', (req, res, next) => {
   console.log(req.body.user);
-  debugger;
-  app.users.insert(req.body.user, {}, function(err, doc) {
-    if(err) {
-      console.log(err);
-      return next(err);
-    }
-    res.redirect('/login/' + doc[0].email);
+  if(database) {
+    database.collection('inventory').insertOne(req.body.user, (err, r) => {
+      if(err) {
+        console.log(err);
+        next(err);
+      } else {
+        // res.redirect('login/' + )
+        console.log(r);
+      }
+    })
+  } else {
+    MongoClient.connect(uri, (err, db) => {
+      if(err) {
+        console.log(err);
+        next(err);
+      } else {
+        database = db;
+       db.collection('inventory').insertOne(req.body.user, (err, r) => {
+        if(err) {
+          console.log(err);
+          next(err);
+        } else {
+          console.log('inserted num ' + r.insertedCount);
+          res.redirect('login/' + r.ops[0].email);
+        }
+      })
+      }
+    })
+  }
   })
-})
 
 /**
  * log in handler
  */
+app.post('/login', (req, res) => {
+  MongoClient.connect(uri, (err, db) => {
+    db.collection('inventory').find({
+      email: req.body.user.email,
+      password: req.body.user.password
+    }).toArray((err, docs) => {
+      if (err) {
+        console.log('find error!');
+        return;
+      } else {
+        if (docs.length > 0)
+          res.send('<p>user no found!</p>')
+        else
+          res.send('ok!');
+      }
+
+    })
+  });
+});
+
  app.get('/login/:signupEmail', (req, res) => {
   res.render('login', { signupEmail: req.params.signupEmail });
  })
 
-let server = new mongodb.Server('127.0.0.1', 27017);
-new mongodb.Db('my-websit', server).open((err, client) => {
-  if(err) throw err;
-  console.log('\033[96m + \033[39m connected to mongodb');
-  app.users = new mongodb.Collection(client, 'users');
-  console.log(app.users.insert);
-  http.createServer(app).listen(3000, function() {
-    console.log('\033[96m + \033[39m app is listening on * 3000');
-  })
-})
+http.createServer(app).listen(3000);
