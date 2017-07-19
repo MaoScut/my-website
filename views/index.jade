@@ -1,7 +1,7 @@
 extends layout
 block body
   if (authenticated)
-    p Welcome back
+    p Welcome back, #{me.first}
     a(href='/logout') Logout
   else
     p Welcome new visitor!
