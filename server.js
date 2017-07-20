@@ -22,7 +22,7 @@ app.configure(function(){
   resave: false,
   saveUninitialized: true
 }));
-  // app.use(app.router);
+// app.use(app.router); this row may override other middleware, it should be put last
   app.use(express.static(path.join(__dirname, 'public')));
   app.use((req, res, next) => {
     if(req.session.loggedIn) {
@@ -61,7 +61,7 @@ app.get('/logout', (req, res) => {
 
 /**
  * sign up handler
-*/
+ */
 app.post('/signup', (req, res, next) => {
   database.collection('inventory').insertOne(req.body.user, (err, r) => {
     if (err) {
@@ -86,7 +86,7 @@ app.post('/login', (req, res) => {
       console.log('find error!');
       return;
     } else {
-      if (docs.lenght == 0)
+      if (docs.length == 0)
         res.send('<p>user no found!</p>')
       else {
         // res.send('ok!');
